@@ -1,0 +1,21 @@
+node_modules/
+dist/
+
+# Segredos e configuracao local
+.env
+
+# Sessao autenticada do WhatsApp (Baileys) - nunca versionar
+/auth_session/
+
+# Banco de dados local
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
