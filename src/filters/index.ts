@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
+import { formatPrice } from "../utils/price";
 import type { Offer } from "../types/offer";
 
 interface Blocklist {
@@ -60,14 +61,14 @@ export function applyFilters(offer: Offer): FilterResult {
   if (env.minPrice !== null && offer.price_current < env.minPrice) {
     return {
       passed: false,
-      reason: `preco (R$ ${offer.price_current}) abaixo do minimo (R$ ${env.minPrice})`,
+      reason: `preco (R$ ${formatPrice(offer.price_current)}) abaixo do minimo (R$ ${formatPrice(env.minPrice)})`,
     };
   }
 
   if (env.maxPrice !== null && offer.price_current > env.maxPrice) {
     return {
       passed: false,
-      reason: `preco (R$ ${offer.price_current}) acima do maximo (R$ ${env.maxPrice})`,
+      reason: `preco (R$ ${formatPrice(offer.price_current)}) acima do maximo (R$ ${formatPrice(env.maxPrice)})`,
     };
   }
 

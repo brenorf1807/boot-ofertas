@@ -2,6 +2,7 @@ import { requireApprovalNumber } from "../config/env";
 import { getOfferById, setOfferStatus } from "../db/queries";
 import type { Offer } from "../types/offer";
 import { logger } from "../utils/logger";
+import { calcDiscountPercent, formatPrice } from "../utils/price";
 import { numberToJid, onMessage, sendText } from "./connection";
 
 type ApprovalDecisionHandler = (offer: Offer) => void | Promise<void>;
@@ -11,20 +12,15 @@ let currentOfferId: number | null = null;
 let onApprovedHandler: ApprovalDecisionHandler | null = null;
 let onRejectedHandler: ApprovalDecisionHandler | null = null;
 
-function formatApprovalMessage(offer: Offer): string {
-  const discount =
-    offer.price_original !== null
-      ? Math.round(
-          ((offer.price_original - offer.price_current) / offer.price_original) * 100
-        )
-      : null;
+export function formatApprovalMessage(offer: Offer): string {
+  const discount = calcDiscountPercent(offer.price_original, offer.price_current);
 
   const lines = [
     `🔥 ${offer.product_name}`,
     offer.price_original !== null
-      ? `De: R$ ${offer.price_original.toFixed(2)}`
+      ? `De: R$ ${formatPrice(offer.price_original)}`
       : null,
-    `Por: R$ ${offer.price_current.toFixed(2)}${discount !== null ? ` (-${discount}%)` : ""}`,
+    `Por: R$ ${formatPrice(offer.price_current)}${discount !== null ? ` (-${discount}%)` : ""}`,
     `Fonte: ${offer.source}`,
     offer.original_link,
     "",

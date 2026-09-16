@@ -3,20 +3,16 @@ import { requireGroupId } from "../config/env";
 import { setOfferPosted } from "../db/queries";
 import type { Offer } from "../types/offer";
 import { logger } from "../utils/logger";
+import { calcDiscountPercent, formatPrice } from "../utils/price";
 import { sendImage, sendText } from "./connection";
 
-function formatGroupMessage(offer: Offer, affiliateLink: string): string {
-  const discount =
-    offer.price_original !== null
-      ? Math.round(
-          ((offer.price_original - offer.price_current) / offer.price_original) * 100
-        )
-      : null;
+export function formatGroupMessage(offer: Offer, affiliateLink: string): string {
+  const discount = calcDiscountPercent(offer.price_original, offer.price_current);
 
   const lines = [
     `🔥 ${offer.product_name}`,
-    offer.price_original !== null ? `~De: R$ ${offer.price_original.toFixed(2)}~` : null,
-    `Por: R$ ${offer.price_current.toFixed(2)}${discount !== null ? ` (-${discount}%)` : ""}`,
+    offer.price_original !== null ? `~De: R$ ${formatPrice(offer.price_original)}~` : null,
+    `Por: R$ ${formatPrice(offer.price_current)}${discount !== null ? ` (-${discount}%)` : ""}`,
     "",
     `👉 ${affiliateLink}`,
   ];

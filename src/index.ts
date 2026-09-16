@@ -50,6 +50,13 @@ async function main() {
     logger.error({ err }, "Erro no ciclo de coleta inicial")
   );
 
+  if (env.collectorIntervalMinutes > 59) {
+    logger.warn(
+      { intervalMinutes: env.collectorIntervalMinutes },
+      "COLLECTOR_INTERVAL_MINUTES acima de 59 nao e' suportado pelo formato de cron usado (campo de minutos vai de 0 a 59); use um valor <= 59"
+    );
+  }
+
   const cronExpression = `*/${env.collectorIntervalMinutes} * * * *`;
   cron.schedule(cronExpression, () => {
     runCollectionCycle().catch((err) =>
