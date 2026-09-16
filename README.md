@@ -158,10 +158,16 @@ risco de bloqueio ao usar uma biblioteca não-oficial). Depois disso, a
 sessão fica salva em `WHATSAPP_SESSION_DIR` (`./auth_session` por padrão) e
 as próximas execuções conectam automaticamente, sem novo QR Code.
 
-Assim que conectar, o bot já roda um ciclo de coleta da Promobit, aplica o
-filtro e começa a te enviar as ofertas aprovadas, uma por vez, no número
-configurado em `APPROVAL_NUMBER`. Responda `1` para aprovar (ela é postada
-automaticamente em `GROUP_ID`) ou `2` para rejeitar.
+Se `GROUP_ID` ainda não estiver no `.env`, o bot conecta, lista no terminal
+os grupos que o número já participa (com o ID de cada um) e encerra —
+adicione o número do bot a um grupo de teste antes, copie o ID mostrado
+para `GROUP_ID` e rode `npm run dev` de novo.
+
+Assim que conectar com `GROUP_ID` configurado, o bot já roda um ciclo de
+coleta da Promobit, aplica o filtro e começa a te enviar as ofertas
+aprovadas, uma por vez, no número configurado em `APPROVAL_NUMBER`.
+Responda `1` para aprovar (ela é postada automaticamente em `GROUP_ID`) ou
+`2` para rejeitar.
 
 Para editar as regras de bloqueio sem reiniciar o bot, edite
 `blocklist.json` diretamente:

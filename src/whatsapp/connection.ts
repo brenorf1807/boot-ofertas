@@ -141,3 +141,10 @@ export function getSocket(): WASocket {
   if (!sock) throw new Error("Socket do WhatsApp ainda nao conectado");
   return sock;
 }
+
+/** Lista os grupos em que o número do bot está participando (id + nome). */
+export async function listGroups(): Promise<{ id: string; name: string }[]> {
+  if (!sock) throw new Error("Socket do WhatsApp ainda nao conectado");
+  const groups = await sock.groupFetchAllParticipating();
+  return Object.values(groups).map((g) => ({ id: g.id, name: g.subject }));
+}
