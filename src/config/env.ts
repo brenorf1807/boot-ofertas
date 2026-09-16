@@ -24,6 +24,12 @@ export const env = {
   dbPath: path.resolve(process.env.DB_PATH ?? "./data/ofertas.db"),
   logLevel: process.env.LOG_LEVEL ?? "info",
   amazonAffiliateTag: process.env.AMAZON_AFFILIATE_TAG ?? "",
+
+  // --- Filtro automatico (Etapa 4) ---
+  minDiscountPercent: Number(process.env.MIN_DISCOUNT_PERCENT ?? "20"),
+  minPrice: process.env.MIN_PRICE ? Number(process.env.MIN_PRICE) : null,
+  maxPrice: process.env.MAX_PRICE ? Number(process.env.MAX_PRICE) : null,
+  blocklistPath: path.resolve(process.env.BLOCKLIST_PATH ?? "./blocklist.json"),
 };
 
 export function requireApprovalNumber(): string {

@@ -14,6 +14,21 @@ type MessageHandler = (from: string, text: string) => void | Promise<void>;
 let sock: WASocket | null = null;
 const messageHandlers: MessageHandler[] = [];
 
+let resolveFirstConnection: () => void;
+const firstConnection = new Promise<void>((resolve) => {
+  resolveFirstConnection = resolve;
+});
+
+/**
+ * Resolve na primeira vez em que a conexao com o WhatsApp for autenticada
+ * com sucesso (evento `connection === "open"`). Use antes de enviar
+ * mensagens logo apos `connectToWhatsApp()`, para nao tentar enviar antes
+ * do QR Code ser escaneado.
+ */
+export function waitUntilConnected(): Promise<void> {
+  return firstConnection;
+}
+
 /**
  * Registra uma funcao que sera chamada para cada mensagem de texto recebida
  * (usado, por exemplo, para processar as respostas 1/2 da fila de aprovacao
@@ -71,6 +86,7 @@ export async function connectToWhatsApp(): Promise<WASocket> {
       }
     } else if (connection === "open") {
       logger.info("Conectado ao WhatsApp com sucesso");
+      resolveFirstConnection();
     }
   });
 
@@ -109,6 +125,16 @@ export function numberToJid(number: string): string {
 export async function sendText(jid: string, text: string): Promise<void> {
   if (!sock) throw new Error("Socket do WhatsApp ainda nao conectado");
   await sock.sendMessage(jid, { text });
+}
+
+/** Envia uma imagem (buscada da `imageUrl`) com legenda para um JID (numero ou grupo). */
+export async function sendImage(
+  jid: string,
+  imageUrl: string,
+  caption: string
+): Promise<void> {
+  if (!sock) throw new Error("Socket do WhatsApp ainda nao conectado");
+  await sock.sendMessage(jid, { image: { url: imageUrl }, caption });
 }
 
 export function getSocket(): WASocket {

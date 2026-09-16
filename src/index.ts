@@ -1,6 +1,10 @@
+import cron from "node-cron";
 import { env } from "./config/env";
 import { getDb } from "./db/schema";
-import { connectToWhatsApp, numberToJid, onMessage, sendText } from "./whatsapp/connection";
+import { connectToWhatsApp, waitUntilConnected } from "./whatsapp/connection";
+import { onApproved, onRejected, startApprovalListener } from "./whatsapp/approval";
+import { postApprovedOfferToGroup } from "./whatsapp/postToGroup";
+import { runCollectionCycle } from "./pipeline";
 import { logger } from "./utils/logger";
 
 async function main() {
@@ -10,23 +14,33 @@ async function main() {
   // Etapa 2: conecta ao WhatsApp (mostra QR Code no terminal no primeiro uso).
   await connectToWhatsApp();
 
-  // Eco de teste: responde qualquer mensagem recebida repetindo o texto.
-  // Serve para validar que o envio/recebimento via Baileys esta funcionando
-  // de ponta a ponta antes de implementarmos o fluxo real de aprovacao.
-  onMessage(async (from, text) => {
-    logger.info({ from, text }, "Mensagem de teste recebida, respondendo eco");
-    await sendText(from, `Eco: ${text}`);
+  logger.info("Aguardando autenticacao no WhatsApp (escaneie o QR Code se solicitado)...");
+  await waitUntilConnected();
+
+  // Etapa 5: escuta as respostas 1/2 do numero de aprovacao.
+  startApprovalListener();
+
+  // Etapa 7: ao aprovar, gera o link de afiliado e posta no grupo.
+  onApproved(postApprovedOfferToGroup);
+  onRejected((offer) => {
+    logger.info({ offerId: offer.id }, "Oferta rejeitada, nada mais a fazer");
   });
 
-  // Se um numero de aprovacao ja estiver configurado, envia uma mensagem de
-  // teste assim que o bot conectar, para confirmar que o envio funciona.
-  if (env.approvalNumber) {
-    logger.info("Enviando mensagem de teste para o numero de aprovacao configurado");
-    await sendText(
-      numberToJid(env.approvalNumber),
-      "Bot de ofertas conectado e pronto (teste da Etapa 2)."
+  // Etapas 3+4: roda a coleta uma vez ao iniciar e depois no intervalo configurado.
+  await runCollectionCycle().catch((err) =>
+    logger.error({ err }, "Erro no ciclo de coleta inicial")
+  );
+
+  const cronExpression = `*/${env.collectorIntervalMinutes} * * * *`;
+  cron.schedule(cronExpression, () => {
+    runCollectionCycle().catch((err) =>
+      logger.error({ err }, "Erro no ciclo de coleta agendado")
     );
-  }
+  });
+  logger.info(
+    { intervalMinutes: env.collectorIntervalMinutes },
+    "Coletor agendado"
+  );
 }
 
 main().catch((err) => {

@@ -14,6 +14,7 @@ export interface Offer {
   original_link: string;
   image_url: string | null;
   source: string;
+  category: string | null;
   collected_at: string;
   status: OfferStatus;
   affiliate_link: string | null;

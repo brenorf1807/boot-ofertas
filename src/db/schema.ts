@@ -26,6 +26,7 @@ export function getDb(): Database.Database {
       original_link TEXT NOT NULL UNIQUE,
       image_url TEXT,
       source TEXT NOT NULL,
+      category TEXT,
       collected_at TEXT NOT NULL DEFAULT (datetime('now')),
 
       -- pending_review: aguardando filtro; awaiting_approval: passou no filtro
