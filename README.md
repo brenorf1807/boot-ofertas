@@ -179,6 +179,37 @@ Para editar as regras de bloqueio sem reiniciar o bot, edite
 }
 ```
 
+## Rodando de forma persistente no seu PC (PM2)
+
+Depois de validar o fluxo com `npm run dev` (QR Code escaneado, `GROUP_ID`
+já configurado), rode o bot em segundo plano com **PM2** — ele reinicia o
+processo sozinho se cair, e continua rodando mesmo se você fechar o
+terminal.
+
+```bash
+npm run pm2:start     # builda e sobe o bot em background
+npm run pm2:status    # ve se esta "online"
+npm run pm2:logs      # acompanha os logs em tempo real (Ctrl+C so' sai do log, nao para o bot)
+npm run pm2:restart   # builda de novo e reinicia (depois de alterar o codigo)
+npm run pm2:stop      # para o bot
+```
+
+Os dados que importam (`data/ofertas.db` e `auth_session/`) ficam na pasta
+do projeto, então parar/reiniciar com PM2 não perde a sessão do WhatsApp
+nem o histórico de ofertas.
+
+**Para o bot voltar a rodar sozinho quando o PC ligar** (opcional, mas
+recomendado se for deixar ele rodando o tempo todo):
+
+- **Linux/macOS**: `npx pm2 startup` (mostra um comando pra copiar e rodar
+  com `sudo`, que registra o PM2 como serviço do sistema) e depois
+  `npx pm2 save` (salva a lista de processos atual, incluindo o
+  `boot-ofertas`, para restaurar automaticamente no próximo boot).
+- **Windows**: instale o pacote `pm2-windows-startup` globalmente
+  (`npm install -g pm2-windows-startup && pm2-startup install`) e depois
+  `npx pm2 save`, ou simplesmente crie uma tarefa no Agendador de Tarefas
+  do Windows para rodar `npm run pm2:start` no logon.
+
 ## Próximos passos sugeridos
 
 - Resolver o bloqueio da Pelando (Playwright com stealth, ou API de
